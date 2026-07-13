@@ -20,16 +20,6 @@ export default defineConfig({
   build: {
     // Raise the chunk size warning threshold slightly for recharts
     chunkSizeWarningLimit: 800,
-    rollupOptions: {
-      output: {
-        // Split vendor libs into separate chunks for better caching
-        // manualChunks must be a function in Vite 8 / Rollup updated types
-        manualChunks: (id) => {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) return 'react'
-          if (id.includes('node_modules/recharts')) return 'recharts'
-          if (id.includes('node_modules/lucide-react')) return 'lucide'
-        }
-      }
-    }
   }
 })
+
