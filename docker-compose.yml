@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: soc_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=soc_automation
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: soc_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    # Load secrets from the root .env file (never committed to git)
+    env_file:
+      - .env
+    environment:
+      # Override MongoDB URL to use the docker service name for container networking
+      - MONGODB_URL=mongodb://mongodb:27017
+      # Set CORS to allow the frontend container (adjust for your Vercel URL in prod)
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+    # NOTE: No bind-mount here — the container uses the code baked into the image.
+    #       Add a bind-mount only for local hot-reloading during development.
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: soc_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
